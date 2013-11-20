@@ -57,6 +57,6 @@ var Animal = Class.extend({
    * The food to be consumed.
    */
   eat: function(food){
-    food ? console.log('nom, nom... '+food+' is good!') : console.log("Can't eat nothing, right?");
+      this.emit('Eating Food', food);
   }
 });
