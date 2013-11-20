@@ -1,11 +1,23 @@
 /**
- * @class Trex
+ * @class Dinosaur
  * Represents the craziest carnivore in the Animal Kingdom.
  * @extends Animal
  */
-var Trex = Animal.extend({
+var Dinosaur = Animal.extend({
   constructor: function(config){
     config = config||{};
-    Trex.super.constructor.call(this);
+    Dinosaur.super.constructor.call(this);
+    Object.defineProperties({
+      /**
+       * @cfg {boolean} [carnivore = true]
+       * Whether or not the dinosaur eats meat. Defaults to `true`.
+       */        
+      carnivore: {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: config.carnivore || true
+      }
+    });    
   }
 });
