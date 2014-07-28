@@ -1,4 +1,4 @@
-Animal = Backbone.Model.extend({
+AK.model.Animal = Backbone.Model.extend({
   defaults: {
     legs: 4,
     rabid: false,
@@ -13,7 +13,7 @@ Animal = Backbone.Model.extend({
   }
 });
 
-Animals = Backbone.Collection.extend({
-  model: Animal,
-  url: 'animal'
+AK.collection.Animals = Backbone.Collection.extend({
+  model: AK.model.Animal,
+  url: '/animals'
 });

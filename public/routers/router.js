@@ -1,25 +1,31 @@
-var Workspace = Backbone.Router.extend({
+AK.routers.workspace = Backbone.Router.extend({
   routes: {
-    'animal/:id': 'viewAnimal'
+    '': 'render',
+    'animal/:id': 'viewAnimal',
+    'close': 'closeDetails'
   },
   initialize: function () {
-    console.log('initializing...');
+    AK.collection.animals = new AK.collection.Animals();
+    AK.view.main = new AK.view.Main();
+    AK.view.createdAnimals = new AK.view.CreatedAnimals();
+    AK.view.details = new AK.view.Details();
   },
-  viewAnimal: function (id) {
-    console.log(id);
-    console.log('we are here');
-    var template = '_details';
 
-    $.ajax({
-      url: "/animal/" + id,
-    }).done(function (data) {
-      var html = nunjucks.render(template, {
-        data: data
-      });
-      $('#details').html(html);
-    });
+  render: function () {
+    AK.view.main.render();
+    AK.view.createdAnimals.render();
+  },
+
+  viewAnimal: function (id) {
+    AK.view.details.render(id);
+  },
+
+  closeDetails: function () {
+    AK.view.details.close();
   }
 });
 
-AnimalRouter = new Workspace();
-Backbone.history.start();
+$(document).ready(function () {
+  AK.router = new AK.routers.workspace();
+  Backbone.history.start();
+});

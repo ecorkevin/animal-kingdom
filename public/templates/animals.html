@@ -1,0 +1,6 @@
+<div>
+  <label>Created Animals</label>
+  {% for item in data %}
+    <li> <a href="#/animal/{{item._id}}">{{item.name}} the {{item.type}}</a>
+  {% endfor %}
+</div>

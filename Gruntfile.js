@@ -4,7 +4,7 @@ module.exports = function (grunt) {
   grunt.initConfig({
     nunjucks: {
       precompile: {
-        src: './views/**/*',
+        src: './public/templates/*',
         dest: './public/js/templates.js'
       },
       options: {
