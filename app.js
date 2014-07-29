@@ -7,14 +7,9 @@ var async = require('async');
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 
-var nunjucksEnv = new nunjucks.Environment(null, {
-  // By default output all data as HTML-encoded. To output raw data
-  // for specific values in templates use the `| safe` filter
-  //autoescape: true
+nunjucks.configure('views', {
+  express: app
 });
-
-// Tell express to use nunjucks as its view engine
-nunjucksEnv.express(app);
 
 //Creates a new db called animals, silently fails if it exists
 nano.db.create('animals');
