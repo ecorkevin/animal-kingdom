@@ -13,6 +13,9 @@ work-in-progress utilizing:
 
 # Getting Started
 
+Let me preface this tutorial by explaining that I am by no means an expert on this subject.  Relatively speaking, I am a beginner, and I write this in the hopes of inspiring other beginners, 
+and hopefully being able to clear up some confusion that I also encountered through learning some of these concepts.
+
 This tutorial assumes that you have the following installed on your machine:
 
 1. **Nodejs** [http://nodejs.org/](http://nodejs.org/)
@@ -23,34 +26,38 @@ This tutorial assumes that you have the following installed on your machine:
 
 And we will be using the following as well:
 
-4. **Express** [http://expressjs.com/](http://expressjs.com/)
+4. **Backbone** [http://backbonejs.org/](http://backbonejs.org/)
 
-5. **Nano** - A node module that allows for easy CouchDB usage [https://github.com/dscape/nano](https://github.com/dscape/nano)
+5. **Express** [http://expressjs.com/](http://expressjs.com/)
 
-6. **Nunjucks** - For templating [http://mozilla.github.io/nunjucks/](http://mozilla.github.io/nunjucks/)
+6. **Nano** - A node module that allows for easy CouchDB usage [https://github.com/dscape/nano](https://github.com/dscape/nano)
+
+7. **Nunjucks** - For templating [http://mozilla.github.io/nunjucks/](http://mozilla.github.io/nunjucks/)
 
 
 ## Next Steps
 
 Once you have the first two items on the list installed, we can move on!
 
-First of all, let's create a directory with a tree like the following:
+Lots of the tutorials I found on Backbone were slightly confusing to me, because 
+all of the code is contained on one page.  For me, at least, that gets slightly
+overwhelming, and I found that when I broke out the pieces into separate files,
+things became less unwieldy.
 
-/animalkingdom
+So, in order to combat this problem, I separated most of the pieces of the puzzle.
+My directory structure looks like this:
 
-  /public
-  
-    /js
-    
-    /models
-    
-    /routers
-    
-    /templates
-    
-    /views
-    
-  /views
+![directory structure](./images/001.jpg "directory structure")
+
+`node_modules` should be self-evident, and anyone who has worked with express before
+might be familiar with the `public` and `views` folders.  In a nutshell, `public` is going
+to house most of everything we're going to be using, which will be mostly js files.
+the `views` folder will be home to anything express needs to render, which in our case
+is going to be one file.
+
+ 
+
+
 
 It may be self-evident, or it may be surprising, depending on your level of interaction with various languages, but despite the fact that JavaScript falls under the general category of "dynamic" or "interpreted" languages, it is in fact a compiled language. It is *not* compiled well in advance, as are many traditionally-compiled languages, nor are the results of compilation portable among various distributed systems.
 
