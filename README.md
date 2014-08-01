@@ -3,14 +3,6 @@ animalkingdom
 A small app to (attempt to!) help beginners (like me!) learn Backbone.js,
 templating, and more!
 
-
-work-in-progress utilizing:
-----------
-- Nodejs/Express
-- CouchDB/Nano
-- Nunjucks
-
-
 # Getting Started
 
 Let me preface this tutorial by explaining that I am by no means an expert on this subject.  Relatively speaking, I am a beginner, and I write this in the hopes of inspiring other beginners, 
@@ -53,38 +45,158 @@ My directory structure looks like this:
 might be familiar with the `public` and `views` folders.  In a nutshell, `public` is going
 to house most of everything we're going to be using, which will be mostly js files.
 the `views` folder will be home to anything express needs to render, which in our case
-is going to be one file.
+is going to be one file (index.html).
 
+## app.js
+
+Let's take a look at app.js.
+
+```js
+var async = require('async');
+var bodyParser = require('body-parser');
+var express = require('express');
+var nano = require('nano')('http://localhost:5984');
+var nunjucks = require('nunjucks');
+
+var app = express();
+app.use(express.static(__dirname + '/public'));
+app.use(bodyParser.json());
+
+nunjucks.configure('views', {
+  express: app
+});
+
+//Creates a new db called animals, silently fails if it exists
+nano.db.create('animals');
+```
+
+So here we're just declaring our requirements.  Anyone who has used node and express before should
+recognize most of this.  In new versions of express, the bodyparser is now a separate module,
+and we account for it above with `app.use(bodyParser.json())`.  In this tutorial, I assume that
+we'll just be using a standard local couchdb installation, which by default is hosted on 
+localhost:5984.  Nano connects to that on line 4.  And lastly, we configure nunjucks to look for
+templates in the `/views` folder.  Really, we just need it to find index.html.  The other files 
+in `/views/templates` are going to be precompiled to a js file.  Let's do that now.
+
+## /js
+Let's take a look inside `/public/js`.    
+
+![directory structure](./images/002.jpg "directory structure")
+
+Here we are housing all of our browser-specific js files, including backbone, jquery, underscore
+(backbone dependency), nunjucks, and templates.js (our precompiled templates).
+
+## Precompile our templates
+So in order to precompile our templates, I take advantage of a module called grunt-nunjucks
+[https://github.com/jlongster/grunt-nunjucks](https://github.com/jlongster/grunt-nunjucks).
+
+If you look inside `gruntfile.js`, you should see a pretty minimal file.  
+
+```js
+grunt.initConfig({
+  nunjucks: {
+    precompile: {
+      src: './views/templates/*', //our templates to precompile
+      dest: './public/js/templates.js' //our precompiled templates
+    },
+    options: {
+      name: function (filename) {
+        return path.basename(filename, '.html'); //strips the filename of .html, leaving us with a pretty template name to use later
+      }
+    }
+  }
+});
+```
+
+Then, on the command line, you should just be able to type in `grunt` and it should compile nicely.
+
+## index.html
+Before we fire up the app, let's take a look at `/views/index.html`.  There's really not much
+to it!  We just have some lines of included scripts, and the body is just a few empty divs,
+ready to be populated.
+
+You should be aware of a file we're including called `./init.js`.  It is creating a global object
+named "AK" (animal kingdom), where we will house our backbone.
+
+**Note the order of js includes here**.  Our init file must be included before our backbone models, 
+which must be included before our backbone views, so on and so forth.
+
+## models/Animal.js
+Ok!  Backbone time.  In our simple example, we're going to be creating and saving animals.
+So, using our global `AK.model`, we add an Animal model.
+
+```js
+AK.model.Animal = Backbone.Model.extend({
+  defaults: {
+    legs: 4,
+    rabid: false,
+    lives: 1
+  },
+  urlRoot: '/animal/'
+});
+```
+
+So, we created a model for Animal.  I threw some arbitrary defaults on it (4 legs, 1 life, and not rabid).
+Backbone allows us to set up a urlRoot here, which will magically call certain endpoints
+when we do actions on the model.  For example, when we `save` our model, it will call a POST 
+to the urlRoot.
+
+## Views
+
+We could put all of our views inside one file, but I find it easier to separate them, to avoid
+dimpi-size (it's only a quarter..and look at how much more you get) files.  Let's take a look at them.
+
+## main.js
+
+This is the main view.  We name it on our AK global and then just extend Backbone.View.  If you 
+notice, we are working with the element '#main', which is the id of our center div in index.html.
+Stands to reason that we will eventually 'render' something to this div, which is what the `render`
+function does here.  
+
+If you remember from earlier, we precompiled the templates located in `/views/templates`, and
+created the file `/public/js/templates.js`.   Our grunt task shortened the names of those 
+precompiled templates, and that's what we're referencing with
  
+`var html = nunjucks.render('main');`
+
+Most of the rest of that file should look familiar to those that have experience with jquery.
+Let's just quickly take a look at what happens when we submit our form (the onFormSubmit function):
+
+```js
+  onFormSubmit: function (e) {
+    var me = this;
+    e.preventDefault();
+    var formData = this.serializeObject($(e.currentTarget));
+    formData.rabid = formData.rabid ? true : false;
+    
+    //reset our defaults if the form left them blank
+    if (formData.lives === ''){
+      formData.lives = 1;
+    }
+  
+    if (formData.legs === ''){
+      formData.legs = 4;
+    }
+    
+    //create a new animal
+    var newAnimal = new AK.model.Animal();
+    newAnimal.save(formData, {
+      success: function (model, response, options) {
+        model.attributes._id = model.attributes.id;
+        bootstrap.animals.push(model.attributes);
+        me.reset();
+        Backbone.history.loadUrl('');
+      }
+    });
+  },
+```
+
+Firstly, we're preventing the submit button from defaulting.  Then we are taking the form data
+and running it through the serializer function that is included in the main.js file.  If the form
+fields on our defaults are blank, we're setting them back, and then we create a new model and save
+it.  The save function gets an optional callback, which we'll use here to set our model's `_id 
+field (which is what couchdb uses).  We then call the main.js function "reset" which resets our
+form.  The last bit there 
 
 
 
-It may be self-evident, or it may be surprising, depending on your level of interaction with various languages, but despite the fact that JavaScript falls under the general category of "dynamic" or "interpreted" languages, it is in fact a compiled language. It is *not* compiled well in advance, as are many traditionally-compiled languages, nor are the results of compilation portable among various distributed systems.
-
-But, nevertheless, the JavaScript engine performs many of the same steps, albeit in more sophisticated ways than we may commonly be aware, of any traditional language-compiler.
-
-In traditional compiled-language process, a chunk of source code, your program, will undergo typically three steps *before* it is executed, roughly called "compilation":
-
-1. **Tokenizing/Lexing:** breaking up a string of characters into meaningful (to the language) chunks, called tokens. For instance, consider the program: `var a = 2;`. This program would likely be broken up into the following tokens: `var`, `a`, `=`, `2`, and `;`. Whitespace may or may not be persisted as a token, depending on whether it's meaningful or not.
-
-    **Note:** The difference between tokenizing and lexing is subtle and academic, but it centers on whether or not these tokens are identified in a *stateless* or *stateful* way. Put simply, if the tokenizer were to invoke stateful parsing rules to figure out whether `a` should be considered a distinct token or just part of another token, *that* would be **lexing**.
-
-2. **Parsing:** taking a stream (array) of tokens and turning it into a tree of nested elements, which collectively represent the grammatical structure of the program. This tree is called an "AST" (**A**bstract **S**yntax **T**ree).
-
-    The tree for `var a = 2;` might start with a top-level node called `VariableDeclaration`, with a child node called `Identifier` (whose value is `a`), and another child called `AssignmentExpression` which itself has a child called `NumericLiteral` (whose value is `2`).
-
-3. **Code-Generation:** the process of taking an AST and turning it into executable code. This part varies greatly depending on the language, the platform it's targeting, etc.
-
-    So, rather than get mired in details, we'll just handwave and say that there's a way to take our above described AST for `var a = 2;` and turn it into a set of machine instructions to actually *create* a variable called `a` (including reserving memory, etc), and then store a value into `a`.
-
-    **Note:** The details of how the engine manages system resources are deeper than we will dig, so we'll just take it for granted that the engine is able to create and store variables as needed.
-
-The JavaScript engine is vastly more complex than *just* those three steps, as are most other language compilers. For instance, in the process of parsing and code-generation, there are certainly steps to optimize the performance of the execution, including collapsing redundant elements, etc.
-
-So, I'm painting only with broad strokes here. But I think you'll see shortly why *these* details we *do* cover, even at a high level, are relevant.
-
-For one thing, JavaScript engines don't get the luxury (like other language compilers) of having plenty of time to optimize, because JavaScript compilation doesn't happen in a build step ahead of time, as with other languages.
-
-For JavaScript, the compilation that occurs happens, in many cases, mere microseconds (or less!) before the code is executed. To ensure the fastest performance, JS engines use all kinds of tricks (like JITs, which lazy compile and even hot re-compile, etc) which are well beyond the "scope" of our discussion here.
-
-Let's just say, for simplicity's sa

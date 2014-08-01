@@ -1,5 +1,19 @@
 AK.view.Main = Backbone.View.extend({
   el: '#main',
+
+  events: {
+    'submit form': 'onFormSubmit',
+    'keyup input[name="type"]': 'onTypeChange',
+    'change input[name="rabid"]': 'onRabid'
+  },
+  
+  render: function () {
+    var html = nunjucks.render('main');
+    this.$el.html(html);
+    $('button').text(this.submitMsg);
+    return this;
+  },
+
   reset: function () {
     $('input[type="text"]').val('');
     $('input[type="checkbox"]').attr('checked', false);
@@ -8,12 +22,6 @@ AK.view.Main = Backbone.View.extend({
 
   submitMsg: 'Let there be',
   checked: false,
-
-  events: {
-    'submit form': 'onFormSubmit',
-    'keyup input[name="type"]': 'onTypeChange',
-    'change input[name="rabid"]': 'onRabid'
-  },
 
   onRabid: function () {
     this.checked = !this.checked;
@@ -36,10 +44,19 @@ AK.view.Main = Backbone.View.extend({
     e.preventDefault();
     var formData = this.serializeObject($(e.currentTarget));
     formData.rabid = formData.rabid ? true : false;
+    
+    //reset our defaults if the form left them blank
+    if (formData.lives === ''){
+      formData.lives = 1;
+    }
+  
+    if (formData.legs === ''){
+      formData.legs = 4;
+    }
+    
     //create a new animal
     var newAnimal = new AK.model.Animal();
-    newAnimal.attributes = formData;
-    newAnimal.save(null, {
+    newAnimal.save(formData, {
       success: function (model, response, options) {
         model.attributes._id = model.attributes.id;
         bootstrap.animals.push(model.attributes);
@@ -47,13 +64,6 @@ AK.view.Main = Backbone.View.extend({
         Backbone.history.loadUrl('');
       }
     });
-  },
-
-  render: function () {
-    var html = nunjucks.render('main');
-    this.$el.html(html);
-    $('button').text(this.submitMsg);
-    return this;
   },
 
   serializeObject: function (target) {
@@ -71,37 +81,5 @@ AK.view.Main = Backbone.View.extend({
       }
     });
     return o;
-  }
-});
-
-AK.view.CreatedAnimals = Backbone.View.extend({
-  el: '#createdAnimals',
-
-  render: function () {
-    var html = nunjucks.render('animals', {
-      data: bootstrap.animals
-    });
-    this.$el.html(html);
-    return this;
-  }
-});
-
-AK.view.Details = Backbone.View.extend({
-  template: 'details',
-  el: '#details',
-  render: function (id) {
-    var me = this;
-    $.ajax({
-      url: "/animal/" + id,
-    }).done(function (data) {
-      var html = nunjucks.render(me.template, {
-        data: data
-      });
-      me.$el.html(html);
-      me.$el.removeClass('hide');
-    });
-  },
-  close: function () {
-    this.$el.addClass('hide');
   }
 });

@@ -5,7 +5,6 @@ AK.routers.workspace = Backbone.Router.extend({
     'close': 'closeDetails'
   },
   initialize: function () {
-    AK.collection.animals = new AK.collection.Animals();
     AK.view.main = new AK.view.Main();
     AK.view.createdAnimals = new AK.view.CreatedAnimals();
     AK.view.details = new AK.view.Details();
