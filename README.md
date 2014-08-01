@@ -138,7 +138,7 @@ AK.model.Animal = Backbone.Model.extend({
 
 So, we created a model for Animal.  I threw some arbitrary defaults on it (4 legs, 1 life, and not rabid).
 Backbone allows us to set up a urlRoot here, which will magically call certain endpoints
-when we do actions on the model.  For example, when we `save` our model, it will call a POST 
+when we perform actions on the model.  For example, when we `save` our model, it will call a POST 
 to the urlRoot.
 
 ## Views
@@ -194,9 +194,24 @@ Let's just quickly take a look at what happens when we submit our form (the onFo
 Firstly, we're preventing the submit button from defaulting.  Then we are taking the form data
 and running it through the serializer function that is included in the main.js file.  If the form
 fields on our defaults are blank, we're setting them back, and then we create a new model and save
-it.  The save function gets an optional callback, which we'll use here to set our model's `_id 
+it.  The save function gets an optional callback, which we'll use here to set our model's _id 
 field (which is what couchdb uses).  We then call the main.js function "reset" which resets our
-form.  The last bit there 
+form.  The last bit there essentially refreshes the page, which we need in order to see our
+added animal on the right.
+
+## details.js
+
+This file is pretty simple.  When we call render(id), we pass in an id along, and then call
+GET /animal/id.  With the data returned from that route, we populate the template "details",
+and then populate the div with id "details".
+
+## createdanimals.js
+
+This file is also pretty simple.  When we call render(), we populate the template named 
+"createdanimals" and then populate the div with the id "createdanimals".  Note that the data
+we pass to it is the bootstrapped "animals" from index.html.
+
+
 
 
 
